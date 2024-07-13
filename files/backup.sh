@@ -32,6 +32,6 @@ backup_file="$BACKUP_DIR/$datetime.json"
 eval "$DISCORD_PREFIX" "$DISCORD_CONF" db_dump 2>/dev/null > "$backup_file"
 gzip "$backup_file"
 
-eval "$OCI_PREFIX" os object put -bn "$BUCKET_NAME" --file "$backup_file.gz" --name "$backup_file.gz" --overwrite
+eval "$OCI_PREFIX" os object put -bn "$BUCKET_NAME" --file "$backup_file.gz" --name "$backup_file.gz" --force
 
 find "$BACKUP_DIR" -type f -mtime +30 -delete
