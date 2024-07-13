@@ -63,5 +63,5 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          context: docker/
+          context: .
           tags: sjc.ocir.io/tnoff/discord-backup:latest,sjc.ocir.io/tnoff/discord-backup:${{ steps.fix-version.outputs.version }}
