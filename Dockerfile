@@ -1,4 +1,4 @@
-FROM sjc.ocir.io/tnoff/discord:2.0
+FROM sjc.ocir.io/tnoff/discord:latest
 
 RUN apt-get install -y cron
 
@@ -14,4 +14,4 @@ RUN chmod 0644 /etc/cron.d/backup-cron
 RUN crontab /etc/cron.d/backup-cron
 RUN touch /var/log/cron.log
 
-CMD ["cron"]
+CMD ["cron", "-f"]
