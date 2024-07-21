@@ -1,1 +1,1 @@
-0 12 * * * /opt/backup/backup.sh 2>&1 > /var/log/backup.log
+0 12 * * * /opt/backup/backup.sh >> /var/log/backup.log 2>&1
