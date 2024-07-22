@@ -52,6 +52,8 @@ jobs:
       - name: Echo version
         id: echo
         run: echo "${{ steps.fix-version.outputs.version }}"
+      - name: Output Run Number
+        run: echo ${{ github.run_number }}
       - name: Login to OCIR
         uses: docker/login-action@v3
         with:
@@ -64,4 +66,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           context: .
-          tags: sjc.ocir.io/tnoff/discord-backup:latest,sjc.ocir.io/tnoff/discord-backup:${{ steps.fix-version.outputs.version }}
+          tags: sjc.ocir.io/tnoff/discord-backup:latest,sjc.ocir.io/tnoff/discord-backup:${{ steps.fix-version.outputs.version }},sjc.ocir.io/tnoff/discord-backup:${{ steps.fix-version.outputs.version }}.{{ github.run_number}}
