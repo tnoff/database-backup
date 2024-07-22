@@ -52,9 +52,12 @@ jobs:
       - name: Fix full version
         id: fix-full-version
         run: echo "full_version=$(echo ${{ needs.tag_build.outputs.version }} | sed -r 's/^v//')" >> $GITHUB_OUTPUT
-      - name: Echo version
-        id: echo
-        run: echo "${{ steps.fix-version.outputs.version }}"
+      - name: Echo submajor version
+        id: echo-submajor
+        run: echo "${{ steps.fix-version.outputs.submajor_version }}"
+      - name: Echo full version
+        id: echo-full
+        run: echo "${{ steps.fix-full-version.outputs.full_version }}.${{ github.run_number }}"
       - name: Output Run Number
         run: echo ${{ github.run_number }}
       - name: Login to OCIR
