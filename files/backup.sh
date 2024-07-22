@@ -5,7 +5,7 @@ set -ux;
 echo "Starting backup script"
 date -u
 
-if [ -f /opt/cron-env ]; then
+if [ -f /opt/backup/env/cron-env ]; then
   source /opt/backup/env/cron-env
 fi
 
