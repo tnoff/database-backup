@@ -6,7 +6,7 @@ echo "Starting backup script"
 date -u
 
 if [ -f /opt/cron-env ]; then
-  source /opt/cron-env
+  source /opt/backup/env/cron-env
 fi
 
 # If deployed within k9s container
