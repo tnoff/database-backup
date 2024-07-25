@@ -32,7 +32,8 @@ mkdir -p "$BACKUP_DIR"
 
 datetime=$(date -u '+%Y-%m-%d')
 backup_file="$BACKUP_DIR/$datetime.json"
-eval "$DISCORD_PREFIX" "$DISCORD_CONF" db_dump 2>/dev/null > "$backup_file"
+date -u >> /var/log/backup.log.err
+eval "$DISCORD_PREFIX" "$DISCORD_CONF" db_dump 2>>/var/log/backup.log.err > "$backup_file"
 gzip "$backup_file" --force
 
 eval "$OCI_PREFIX" os object put -bn "$BUCKET_NAME" --file "$backup_file.gz" --name "$backup_file.gz" --force
