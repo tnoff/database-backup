@@ -1,15 +1,19 @@
 # Discord Backup
 
-Container that runs a cron job that executes the `discord-bot <config> db_dump` command and saves to OCI object storage.
-
-## Volume Mounts
-
-Expects a working `discord.cnf` file mounted in the `/opt/discord/cnf` directory within the container.
+Runs a simple `pg_dump` command and uploads to OCI object storage.
 
 ## Environment Variables
 
-Requires a bucket to upload the files to, set via `BUCKET_NAME`.
+For environment variables to be used in the cron job, place environment exports in a `/opt/backup/env/cron-env` file.
+
+Requires:
+
+- `BUCKET_NAME` - bucket in oci object storage
+- `DATABASE_USER` - database user to connect with
+- `DATABASE_HOST` - database host to connect to
+- `PGPASSWORD` - database password
+
+Optional
+- `LOCAL_DEPLOY` - if true, uses oci auth key, if false uses instance principal. 
 
 For local deploys, use `LOCAL_DEPLOY=true` and place the required oci-cli files as a mount within the `/opt/oci/config` dir on the container.
-
-For environment variables to be used in the cron job, place environment exports in a `/opt/cron-env` file.
