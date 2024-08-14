@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
 
-RUN apt-get update && apt-get install -y virtualenv cron postgresql-client
+RUN apt-get update && apt-get install -y python3-virtualenv cron postgresql-client
 
 RUN virutalenv /opt/venv/
 RUN /opt/venv/bin/pip install oci-cli
