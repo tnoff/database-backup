@@ -4,6 +4,7 @@ on:
   - pull_request
 
 jobs:
+  docker:
     name: Docker build checks
     runs-on: ubuntu-latest
     permissions:
