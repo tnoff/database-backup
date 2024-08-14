@@ -30,7 +30,7 @@ datetime=$(date -u '+%Y-%m-%d')
 backup_file="$BACKUP_DIR/$datetime.sql"
 
 date -u >> /var/log/backup.log.err
-pg_dump -h "${DATABASE_HOST}" -u "${DATABASE_USER}" "${DATABASE_NAME}" > "$backup_file"
+pg_dump -h "${DATABASE_HOST}" -U "${DATABASE_USER}" "${DATABASE_NAME}" > "$backup_file"
 gzip "$backup_file" --force
 eval "$OCI_PREFIX" os object put -bn "$BUCKET_NAME" --file "$backup_file.gz" --name "$backup_file.gz" --force
 find "$BACKUP_DIR" -type f -mtime +30 -delete
