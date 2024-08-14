@@ -1,8 +1,9 @@
-FROM sjc.ocir.io/tnoff/discord:latest
+FROM ubuntu:24.04
 
-RUN apt-get install -y cron
+RUN apt-get update && apt-get install -y virtualenv cron postgresql-client
 
-RUN /opt/discord-venv/bin/pip install oci-cli
+RUN virutalenv /opt/venv/
+RUN /opt/venv/bin/pip install oci-cli
 
 ENV WORKDIR="/opt/backup"
 
