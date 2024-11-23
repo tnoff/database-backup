@@ -12,7 +12,7 @@ fi
 # If deployed within k9s container
 LOCAL_DEPLOY="${LOCAL_DEPLOY:-false}"
 # Bucket name
-BUCKET_NAME="${BUCKET_NAME:-discord-test}"
+BUCKET_NAME="${BUCKET_NAME:-test}"
 # Other config args
 CONFIG_FILE="${CONFIG_FILE:-/opt/oci/config/config}"
 OCI_PREFIX="/opt/venv/bin/oci"

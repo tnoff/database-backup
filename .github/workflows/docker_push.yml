@@ -72,4 +72,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           context: .
-          tags: sjc.ocir.io/tnoff/discord-backup:latest,sjc.ocir.io/tnoff/discord-backup:${{ steps.fix-version.outputs.submajor_version }},sjc.ocir.io/tnoff/discord-backup:${{ steps.fix-full-version.outputs.full_version }},sjc.ocir.io/tnoff/discord-backup:${{ steps.fix-full-version.outputs.full_version }}.${{ github.run_number}}
+          tags: sjc.ocir.io/tnoff/database-backup:latest,sjc.ocir.io/tnoff/database-backup:${{ steps.fix-version.outputs.submajor_version }},sjc.ocir.io/tnoff/database-backup:${{ steps.fix-full-version.outputs.full_version }},sjc.ocir.io/tnoff/database-backup:${{ steps.fix-full-version.outputs.full_version }}.${{ github.run_number}}

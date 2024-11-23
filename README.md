@@ -1,4 +1,4 @@
-# Discord Backup
+# OCI Database Backup
 
 Runs a simple `pg_dump` command and uploads to OCI object storage.
 
