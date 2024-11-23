@@ -10,14 +10,14 @@ if [ -f /opt/backup/env/cron-env ]; then
 fi
 
 # If deployed within k9s container
-LOCAL_DEPLOY="${LOCAL_DEPLOY:-false}"
+INSTANCE_PRINCIPAL="${INSTANCE_PRINCIPAL:-false}"
 # Bucket name
 BUCKET_NAME="${BUCKET_NAME:-test}"
 # Other config args
 CONFIG_FILE="${CONFIG_FILE:-/opt/oci/config/config}"
 OCI_PREFIX="/opt/venv/bin/oci"
 
-if [ $LOCAL_DEPLOY == "false" ]; then
+if [ $INSTANCE_PRINCIPAL == "true" ]; then
   export OCI_CLI_AUTH=instance_principal
 else
   OCI_PREFIX="$OCI_PREFIX --config-file $CONFIG_FILE"

@@ -1,6 +1,6 @@
 FROM ubuntu:24.04
 
-RUN apt-get update && apt-get install -y python3-virtualenv cron postgresql-client
+RUN apt-get update && apt-get install -y python3-dev python3-virtualenv postgresql-client
 
 RUN virtualenv /opt/venv/
 RUN /opt/venv/bin/pip install oci-cli
@@ -9,10 +9,6 @@ ENV WORKDIR="/opt/backup"
 
 # Setup cronfiles
 COPY ./files/backup.sh "${WORKDIR}/backup.sh"
-COPY ./files/cron/backup-cron /etc/cron.d/backup-cron
 RUN chmod +x "${WORKDIR}/backup.sh"
-RUN chmod 0644 /etc/cron.d/backup-cron
-RUN crontab /etc/cron.d/backup-cron
-RUN touch /var/log/cron.log
 
-CMD ["cron", "-f"]
+CMD ["/opt/backup/backup.sh", ">>", "/var/log/backup.log",  "2>&1"]

@@ -14,6 +14,8 @@ Requires:
 - `PGPASSWORD` - database password
 
 Optional
-- `LOCAL_DEPLOY` - if true, uses oci auth key, if false uses instance principal. 
+- `INSTANCE_PRINCIPAL` - if false, uses oci auth key, if true uses instance principal. 
 
-For local deploys, use `LOCAL_DEPLOY=true` and place the required oci-cli files as a mount within the `/opt/oci/config` dir on the container.
+For local deploys, use `INSTANCE_PRINCIPAL=false` and place the required oci-cli files as a mount within the `/opt/oci/config` dir on the container.
+
+If you want, setup a mount of `/opt/backup/files` to keep a mount point with the last 30 days of snapshots.
