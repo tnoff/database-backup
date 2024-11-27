@@ -13,9 +13,5 @@ Requires:
 - `DATABASE_HOST` - database host to connect to
 - `PGPASSWORD` - database password
 
-Optional
-- `INSTANCE_PRINCIPAL` - if false, uses oci auth key, if true uses instance principal. 
 
-For local deploys, use `INSTANCE_PRINCIPAL=false` and place the required oci-cli files as a mount within the `/opt/oci/config` dir on the container.
-
-If you want, setup a mount of `/opt/backup/files` to keep a mount point with the last 30 days of snapshots.
+If you want to set oci config files or auth options, place a config file in `/opt/oci/config` and set the `OCI_CONFIG_FILE` env variable.

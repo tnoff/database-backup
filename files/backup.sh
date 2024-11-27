@@ -9,18 +9,9 @@ if [ -f /opt/backup/env/cron-env ]; then
   source /opt/backup/env/cron-env
 fi
 
-# If deployed within k9s container
-INSTANCE_PRINCIPAL="${INSTANCE_PRINCIPAL:-false}"
-# Bucket name
-BUCKET_NAME="${BUCKET_NAME:-test}"
-# Other config args
-CONFIG_FILE="${CONFIG_FILE:-/opt/oci/config/config}"
-OCI_PREFIX="/opt/venv/bin/oci"
-
-if [ $INSTANCE_PRINCIPAL == "true" ]; then
-  export OCI_CLI_AUTH=instance_principal
-else
-  OCI_PREFIX="$OCI_PREFIX --config-file $CONFIG_FILE"
+OCI_PREFIX="oci"
+if [ ! -z OCI_CONFIG_FILE ]; then
+  OCI_PREFIX="$OCI_PREFIX --config-file $OCI_CONFIG_FILE"
 fi
 
 BACKUP_DIR="/opt/backup/files"
@@ -33,4 +24,4 @@ date -u >> /var/log/backup.log.err
 pg_dump -h "${DATABASE_HOST}" -U "${DATABASE_USER}" "${DATABASE_NAME}" > "$backup_file"
 gzip "$backup_file" --force
 eval "$OCI_PREFIX" os object put -bn "$BUCKET_NAME" --file "$backup_file.gz" --name "$backup_file.gz" --force
-find "$BACKUP_DIR" -type f -mtime +30 -delete
+find "$BACKUP_DIR" -type f -delete
