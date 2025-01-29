@@ -43,7 +43,7 @@ jobs:
       - tag_build
     outputs:
       submajor_version: ${{ steps.fix-version.outputs.submajor_version }}
-      full_version: ${{ steps.fix-fix-full-version.outputs.full_version }}
+      full_version: ${{ steps.fix-full-version.outputs.full_version }}
     steps:
       - name: Fix version
         id: fix-version
@@ -56,7 +56,7 @@ jobs:
         run: echo "${{ steps.fix-version.outputs.submajor_version }}"
       - name: Echo full version
         id: echo-full
-        run: echo "${{ steps.fix-fix-full-version.outputs.full_version }}.${{ github.run_number }}"
+        run: echo "${{ steps.fix-full-version.outputs.full_version }}.${{ github.run_number }}"
   push_to_registry:
     name: Push Docker AMD image to Docker Hub
     runs-on: ubuntu-latest
