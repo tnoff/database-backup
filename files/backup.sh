@@ -9,7 +9,7 @@ if [ -f /opt/backup/env/cron-env ]; then
   source /opt/backup/env/cron-env
 fi
 
-OCI_PREFIX="/opt/venv/bin/oci"
+OCI_PREFIX="oci"
 if [ ! -z OCI_CONFIG_FILE ]; then
   OCI_PREFIX="$OCI_PREFIX --config-file $OCI_CONFIG_FILE"
 fi
