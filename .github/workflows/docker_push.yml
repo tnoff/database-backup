@@ -56,4 +56,4 @@ jobs:
         with:
           push: true
           context: .
-          tags: registry.digitalocean.com/${{ secrets.REGISTRY_NAME }}/tyler-north.com:latest,registry.digitalocean.com/${{ secrets.REGISTRY_NAME }}/tyler-north.com:${{ steps.github-hash.outputs.github_hash }}
+          tags: registry.digitalocean.com/${{ secrets.REGISTRY_NAME }}/database-backup:latest,registry.digitalocean.com/${{ secrets.REGISTRY_NAME }}/database-backup:${{ steps.github-hash.outputs.github_hash }}
