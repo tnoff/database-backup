@@ -2,6 +2,10 @@
 
 Runs a simple `pg_dump` command and uploads to OCI object storage or S3 Object Storage
 
+## PG Version
+
+Assumes postgres version 16
+
 ## Volumes
 
 All backup file data written to `/opt/backup/files` if you want to keep it on a data volume for consistency.
@@ -28,7 +32,6 @@ By default the system will default to S3 Object Storage, to override to OCI obje
 ```
 export STORAGE_BACKEND="oci"
 ```
-
 
 ## OCI Setup
 
