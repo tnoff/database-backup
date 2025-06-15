@@ -44,3 +44,7 @@ Place the relevant environment exports in the `/opt/backup/env/cron-env` file, i
 - `AWS_ENDPOINT_URL_S3`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
+
+## Optional Args
+
+Pass in `PGDUMP_ARGS` to allow additional args on the pgdump command.
