@@ -48,3 +48,5 @@ Place the relevant environment exports in the `/opt/backup/env/cron-env` file, i
 ## Optional Args
 
 Pass in `PGDUMP_ARGS` to allow additional args on the pgdump command.
+
+Pass in `GZIP_ARGS` for additional args on the gzip command.
