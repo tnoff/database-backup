@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.14-slim-bookworm
 ENV WORKDIR="/opt/backup"
 
 # https://linuxcapable.com/how-to-install-postgresql-16-on-ubuntu-linux/
