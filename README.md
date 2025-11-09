@@ -1,4 +1,4 @@
-# OCI Database Backup
+# Database Backup
 
 Runs a simple `pg_dump` command and uploads to OCI object storage or S3 Object Storage
 
