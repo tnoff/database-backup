@@ -1,2 +1,2 @@
-awscli==1.42.69
+awscli==1.43.3
 oci-cli==3.71.0
