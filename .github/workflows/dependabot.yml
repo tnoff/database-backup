@@ -1,0 +1,14 @@
+name: Dependabot Auto Approve
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  auto-approve-specific:
+    uses: tnoff/github-workflows/.github/workflows/dependabot-auto-approve.yml@609d7943399049604e772ff54833d4e5e5aa9bbc
+    with:
+      accept_packages: 'awscli,oci-cli'
+      allowed_update_types: 'major,minor,patch'
+    secrets:
+      bot_token: ${{ secrets.APPROVAL_BOT_PAT }}
