@@ -1,4 +1,5 @@
 FROM python:3.14-slim-bookworm
+ARG POSTGRES_VERSION=17
 ENV WORKDIR="/opt/backup"
 
 # https://linuxcapable.com/how-to-install-postgresql-16-on-ubuntu-linux/
@@ -6,7 +7,7 @@ RUN apt-get update && apt-get install -y curl gpg lsb-release
 RUN curl -fSsL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | tee /usr/share/keyrings/postgresql.gpg > /dev/null
 RUN echo deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main | tee /etc/apt/sources.list.d/postgresql.list
 
-RUN apt-get update && apt-get install -y gcc postgresql-client-16
+RUN apt-get update && apt-get install -y gcc postgresql-client-${POSTGRES_VERSION}
 
 # Remove gcc for image size
 RUN apt-get remove -y curl gpg lsb-release gcc && apt-get autoremove -y
