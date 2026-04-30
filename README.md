@@ -1,6 +1,6 @@
 # Database Backup
 
-Runs a simple `pg_dump` command and uploads to OCI object storage or S3 Object Storage
+Runs a simple `pg_dump` command and uploads to S3 Object Storage
 
 ## PG Version
 
@@ -24,18 +24,6 @@ Requires:
 - `DATABASE_NAME` - name of database
 - `PGPASSWORD` - database password
 
-
-## Object Storage Types
-
-By default the system will default to S3 Object Storage, to override to OCI object storage use:
-
-```
-export STORAGE_BACKEND="oci"
-```
-
-## OCI Setup
-
-If you want to set oci config files or auth options, place them in the `/opt/backup/env/cron-env` file.
 
 ## S3 Setup
 

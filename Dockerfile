@@ -18,8 +18,7 @@ RUN rm /opt/requirements.txt
 
 # Setup cronfiles
 COPY ./files/backup.sh "${WORKDIR}/backup.sh"
-COPY ./files/oci.sh "${WORKDIR}/oci.sh"
 COPY ./files/aws.sh "${WORKDIR}/aws.sh"
-RUN chmod +x "${WORKDIR}/backup.sh" "${WORKDIR}/oci.sh" "${WORKDIR}/aws.sh"
+RUN chmod +x "${WORKDIR}/backup.sh" "${WORKDIR}/aws.sh"
 
 CMD ["/opt/backup/backup.sh", ">>", "/var/log/backup.log",  "2>&1"]

@@ -1,0 +1,107 @@
+include:
+  - project: 'tnoff-projects/github-workflows'
+    ref: e48cecee88a1b534e38b799a6fcf1eb2e87e0d66
+    file: '/gitlab/tag.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: e48cecee88a1b534e38b799a6fcf1eb2e87e0d66
+    file: '/gitlab/discord-notify.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: e48cecee88a1b534e38b799a6fcf1eb2e87e0d66
+    file: '/gitlab/renovate.yml'
+
+
+stages:
+  - validate
+  - tag
+  - build
+  - notify
+  - renovate
+
+tag-build:
+  extends: .tag
+  stage: tag
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+      when: on_success
+
+build-check:
+  stage: validate
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - docker build .
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_ID != $CI_PROJECT_ID
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+build-docker:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  needs: [tag-build]
+  before_script:
+    - docker login -u "$OCI_USERNAME" -p "$OCI_TOKEN" "$OCI_REGISTRY"
+    - docker run --privileged --rm tonistiigi/binfmt --install all
+    - docker buildx create --use
+  script:
+    - VERSION=$(cat VERSION | tr -d '[:space:]')
+    - IMAGE="$OCI_REGISTRY/$OCI_REPO_NAME"
+    - |
+      docker buildx build \
+        --platform linux/amd64,linux/arm64 \
+        --push \
+        -t "$IMAGE:$VERSION" \
+        -t "$IMAGE:latest" \
+        .
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+      when: on_success
+
+notify-mr:
+  extends: .discord-notify
+  stage: notify
+  needs: []
+  variables:
+    NOTIFY_TYPE: mr_opened
+    DISCORD_WEBHOOK_URL: $DISCORD_MR_WEBHOOK
+  rules:
+    # Fork MRs require a project member to manually trigger jobs — prevents untrusted code from running CI automatically
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_ID != $CI_PROJECT_ID
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: always
+
+notify-tag-failure:
+  extends: .discord-notify
+  stage: notify
+  needs: [tag-build, build-docker]
+  variables:
+    NOTIFY_TYPE: failure
+    DISCORD_WEBHOOK_URL: $DISCORD_BUILD_FAILURE_WEBHOOK
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+      when: on_failure
+
+notify-merged:
+  extends: .discord-notify
+  stage: notify
+  needs: []
+  variables:
+    NOTIFY_TYPE: mr_merged
+    DISCORD_WEBHOOK_URL: $DISCORD_MR_WEBHOOK
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+      when: always
+
+renovate:
+  extends: .renovate
+  stage: renovate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
