@@ -3,9 +3,11 @@
   "extends": ["config:recommended"],
   "enabledManagers": ["dockerfile", "gitlabci", "pip_requirements"],
   "labels": ["dependencies"],
+  "rebaseWhen": "behind-base-branch",
   "packageRules": [
     {
       "matchUpdateTypes": ["patch"],
+      "additionalBranchPrefix": "dev-",
       "automerge": true
     }
   ]
