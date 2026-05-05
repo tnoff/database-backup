@@ -44,7 +44,7 @@ tag-build:
 
 build-check:
   stage: validate
-  image: docker.io/moby/buildkit:v0.18.0
+  image: docker.io/moby/buildkit:v0.29.0
   script:
     - |
       buildctl --addr tcp://buildkitd.gitlab-runner.svc.cluster.local:1234 build \
@@ -85,7 +85,7 @@ trufflehog-image:
 
 docker-push:
   stage: build
-  image: docker.io/moby/buildkit:v0.18.0
+  image: docker.io/moby/buildkit:v0.29.0
   needs: []
   variables:
     DOCKER_CONFIG: /tmp/.docker
