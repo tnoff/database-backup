@@ -146,9 +146,10 @@ docker-push:
 # the pin in its cronjob manifest, and opens an MR. allow_failure so a
 # downstream automation hiccup doesn't fail the main pipeline.
 #
-# DOCKER_APPS_PROJECT_ID is a masked CI variable set via terraform. The trigger
-# uses CI_JOB_TOKEN, which requires this project to be in docker-apps'
-# Settings → CI/CD → Token Access allow-list.
+# DOCKER_APPS_PROJECT_ID and DOCKER_APPS_TRIGGER_TOKEN are masked CI variables
+# set via terraform. The trigger token is used instead of CI_JOB_TOKEN because
+# GitLab blocks CI_JOB_TOKEN from setting variables[...] on triggered
+# pipelines (HTTP 400 "Insufficient permissions to set pipeline variables").
 trigger-bump-docker-apps:
   stage: build
   image: docker.io/library/alpine:3
@@ -161,10 +162,11 @@ trigger-bump-docker-apps:
   script:
     - |
       [ -n "$DOCKER_APPS_PROJECT_ID" ] || { echo "DOCKER_APPS_PROJECT_ID not set" >&2; exit 1; }
+      [ -n "$DOCKER_APPS_TRIGGER_TOKEN" ] || { echo "DOCKER_APPS_TRIGGER_TOKEN not set" >&2; exit 1; }
       [ -n "$IMAGE" ] || { echo "IMAGE not set — did docker-push emit build.env?" >&2; exit 1; }
 
       curl -sS --fail-with-body -X POST \
-        --form "token=$CI_JOB_TOKEN" \
+        --form "token=$DOCKER_APPS_TRIGGER_TOKEN" \
         --form "ref=main" \
         --form "variables[BUMP_SOURCE]=database-backup" \
         --form "variables[IMAGE_NAME]=$IMAGE" \
