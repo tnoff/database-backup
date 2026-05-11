@@ -1,0 +1,15 @@
+# Files excluded from `git archive` output (and therefore from the
+# auto-generated source tarballs attached to GitLab Releases). The image
+# this repo builds is the primary release artifact; the source tarball is
+# secondary, so we keep just the Dockerfile + runtime scripts + install
+# metadata.
+
+.claude/         export-ignore
+.github/         export-ignore
+
+.gitattributes   export-ignore
+.gitlab-ci.yml   export-ignore
+CHANGELOG.md     export-ignore
+CONTRIBUTING.md  export-ignore
+README.md        export-ignore
+renovate.json    export-ignore
