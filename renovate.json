@@ -13,8 +13,13 @@
       "automerge": true
     },
     {
+      "matchPackageNames": ["awscli"],
+      "additionalBranchPrefix": "dev-",
+      "automerge": true
+    },
+    {
       "matchManagers": ["pip_requirements", "dockerfile"],
-      "matchPackageNames": ["!pytest", "!pytest-cov", "!pytest-mock", "!requests-mock", "!tox", "!pylint", "!bandit"],
+      "matchPackageNames": ["!pytest", "!pytest-cov", "!pytest-mock", "!requests-mock", "!tox", "!pylint", "!bandit", "!awscli"],
       "additionalBranchPrefix": "dev-"
     }
   ]
