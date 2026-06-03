@@ -4,7 +4,9 @@ Runs a simple `pg_dump` command and uploads to S3 Object Storage
 
 ## PG Version
 
-Assumes postgres version 16
+The image ships `postgresql-client-17` by default. Override at build
+time with `--build-arg POSTGRES_VERSION=<n>` if you need a different
+major (e.g. when targeting an older database server).
 
 ## Volumes
 
@@ -38,3 +40,8 @@ Place the relevant environment exports in the `/opt/backup/env/cron-env` file, i
 Pass in `PGDUMP_ARGS` to allow additional args on the pgdump command.
 
 Pass in `GZIP_ARGS` for additional args on the gzip command.
+
+## For developers
+
+- [DEVELOPMENT.md](DEVELOPMENT.md) — build, local run, CI templates.
+- [AGENTS.md](AGENTS.md) — non-obvious internals for AI coding agents.
