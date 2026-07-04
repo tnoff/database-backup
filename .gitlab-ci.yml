@@ -1,36 +1,36 @@
 include:
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/tag.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/discord-notify.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/renovate.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/branch-cleanup.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/trufflehog.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/trufflehog-image.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/bump-version.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/release.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/trigger-bump.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/buildkit-build-check.yml'
   - project: 'tnoff-projects/github-workflows'
-    ref: 0f4fe6d504cb54f3b7236d784b089031ce372c84
+    ref: 262ca72b207d3cd3d8fda952578c715ebd033909
     file: '/gitlab/buildkit-docker-push.yml'
 
 default:
