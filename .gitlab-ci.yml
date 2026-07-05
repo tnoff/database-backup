@@ -38,22 +38,21 @@ default:
     - self-hosted
 
 stages:
-  - validate
-  - tag
-  - release
-  - build
+  - pr-check
+  - test
+  - push
   - notify
   - renovate
 
-# Shared rules for the pre-merge image-build + image-scan jobs (build-check,
-# trufflehog-image). They validate the image BEFORE merge, on MRs that touch
+# Shared rules for the pre-merge image-build + image-scan jobs (pr-check:build,
+# pr-check:scan). They validate the image BEFORE merge, on MRs that touch
 # the image inputs (the Dockerfile, requirements, or backup scripts). Skipped
 # on cosmetic MRs (github-workflows ref bumps, doc-only edits, renovate.json
 # tweaks); fork MRs keep the manual gate.
 #
-# Deliberately NOT run on the default branch: there, docker-push already
+# Deliberately NOT run on the default branch: there, push:image already
 # rebuilds and pushes the image directly and in parallel, so a separate
-# build-check is just a redundant second build, and a post-push image scan
+# pr-check:build is just a redundant second build, and a post-push image scan
 # gates nothing (the image is already in the registry).
 .image-build-rules:
   rules:
@@ -73,61 +72,64 @@ bump-version:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate\/dev-/
 
-tag-build:
+"push:tag":
   extends: .tag
-  stage: tag
+  stage: push
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
       when: on_success
 
-release:
+"push:release":
   extends: .release
-  stage: release
+  stage: push
   needs:
-    - job: tag-build
+    - job: "push:tag"
       artifacts: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
       when: on_success
 
-build-check:
+"pr-check:build":
   extends: .buildkit-build-check
+  stage: pr-check
   rules: !reference [.image-build-rules, rules]
 
 
-trufflehog:
+"pr-check:secrets":
   extends: .trufflehog
-  stage: validate
+  stage: pr-check
   rules:
     # Fork MRs require a project member to manually trigger jobs — prevents untrusted code from running CI automatically
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_ID != $CI_PROJECT_ID
       when: manual
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
-trufflehog-image:
+"pr-check:scan":
   extends: .trufflehog-image
-  stage: validate
-  needs: [build-check]
+  stage: pr-check
+  needs: ["pr-check:build"]
   variables:
     TRUFFLEHOG_IMAGE_TARBALL: image.tar
   rules: !reference [.image-build-rules, rules]
 
 
-docker-push:
+"push:image":
   extends: .buildkit-docker-push
+  stage: push
 
 # Producer side of the docker-apps image-pin bump flow.
 # Rewrites the pin in the database-backup CronJob manifest on merge to main.
 # See github-workflows/gitlab/trigger-bump.yml for the template details.
 trigger-bump-docker-apps:
   extends: .trigger-bump
+  stage: push
   needs:
-    - job: docker-push
+    - job: "push:image"
       artifacts: true
   variables:
     BUMP_SOURCE: 'database-backup'
 
-notify-mr:
+"notify:mr-opened":
   extends: .discord-notify
   stage: notify
   needs: []
@@ -141,10 +143,10 @@ notify-mr:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
 
-notify-tag-failure:
+"notify:push-failure":
   extends: .discord-notify
   stage: notify
-  needs: [tag-build, docker-push, trigger-bump-docker-apps]
+  needs: ["push:tag", "push:image", trigger-bump-docker-apps]
   variables:
     NOTIFY_TYPE: failure
     DISCORD_WEBHOOK_URL: $DISCORD_BUILD_FAILURE_WEBHOOK
@@ -152,7 +154,7 @@ notify-tag-failure:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
       when: on_failure
 
-notify-renovate-failure:
+"notify:renovate-failure":
   extends: .discord-notify
   stage: renovate
   needs: [renovate]
@@ -164,10 +166,10 @@ notify-renovate-failure:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: on_failure
 
-notify-release-failure:
+"notify:release-failure":
   extends: .discord-notify
   stage: notify
-  needs: [release]
+  needs: ["push:release"]
   allow_failure: true
   variables:
     NOTIFY_TYPE: failure
@@ -177,7 +179,7 @@ notify-release-failure:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
       when: on_failure
 
-notify-merged:
+"notify:merged":
   extends: .discord-notify
   stage: notify
   needs: []
@@ -210,7 +212,7 @@ branch-cleanup:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
-notify-cleanup-failure:
+"notify:cleanup-failure":
   extends: .discord-notify
   stage: renovate
   needs: [branch-cleanup]
