@@ -29,7 +29,7 @@ jobs:
     name: Assemble changelog
     permissions:
       contents: write
-    uses: tnoff/github-workflows/.github/workflows/assemble-changelog.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    uses: tnoff/github-workflows/.github/workflows/assemble-changelog.yml@e410a65c9ab14c946834ad194d9ddef5a3bc611f
     secrets:
       push_token: ${{ secrets.GIT_PUSH_TOKEN }}
 
@@ -38,7 +38,7 @@ jobs:
     needs: assemble-changelog
     permissions:
       contents: write
-    uses: tnoff/github-workflows/.github/workflows/tag.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    uses: tnoff/github-workflows/.github/workflows/tag.yml@e410a65c9ab14c946834ad194d9ddef5a3bc611f
     with:
       gate_on_fragments: true
     secrets:
@@ -49,7 +49,7 @@ jobs:
     needs: tag
     permissions:
       contents: write
-    uses: tnoff/github-workflows/.github/workflows/release.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    uses: tnoff/github-workflows/.github/workflows/release.yml@e410a65c9ab14c946834ad194d9ddef5a3bc611f
     with:
       version: ${{ needs.tag.outputs.version }}
       tag_created: ${{ needs.tag.outputs.tag_created }}
@@ -57,18 +57,23 @@ jobs:
   push-image:
     name: Push image
     if: "${{ !startsWith(github.event.head_commit.message, 'docs: assemble changelog') }}"
-    uses: tnoff/github-workflows/.github/workflows/docker-push.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    uses: tnoff/github-workflows/.github/workflows/docker-push.yml@e410a65c9ab14c946834ad194d9ddef5a3bc611f
+    # registry / namespace / repo_name are INPUTS, not secrets. GitHub refuses
+    # to set a job output containing secret material, so while they were
+    # secrets the `image` output below came back empty and trigger-bump sent a
+    # blank IMAGE_NAME to docker-apps. See github-workflows!98.
+    with:
+      registry: ${{ vars.OCI_REGISTRY }}
+      namespace: ${{ vars.OCI_NAMESPACE }}
+      repo_name: ${{ vars.OCI_REPO_NAME }}
     secrets:
-      oci_registry: ${{ secrets.OCI_REGISTRY }}
-      oci_namespace: ${{ secrets.OCI_NAMESPACE }}
-      oci_repo_name: ${{ secrets.OCI_REPO_NAME }}
       oci_username: ${{ secrets.OCI_USERNAME }}
       oci_token: ${{ secrets.OCI_TOKEN }}
 
   trigger-bump:
     name: Trigger docker-apps bump
     needs: push-image
-    uses: tnoff/github-workflows/.github/workflows/trigger-bump.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    uses: tnoff/github-workflows/.github/workflows/trigger-bump.yml@e410a65c9ab14c946834ad194d9ddef5a3bc611f
     with:
       bump_source: database-backup
       image: ${{ needs.push-image.outputs.image }}
