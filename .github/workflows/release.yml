@@ -1,0 +1,78 @@
+name: Release
+
+# Runs on the default branch: fold the changelog, tag, release, then build and
+# push the image and ask docker-apps to bump its pin.
+#
+# ---------------------------------------------------------------------------
+# The fold guard
+# ---------------------------------------------------------------------------
+# assemble-changelog pushes a "docs: assemble changelog for X" commit to main,
+# which triggers this workflow a SECOND time. That second pass is what cuts the
+# tag and the release, because tag defers while fragments are still pending.
+#
+# But the image must NOT be built and pushed twice, and docker-apps must not be
+# asked to bump twice. The GitLab config guarded this with a repo-local
+# `.not-on-changelog-fold` rule matching the commit message; this is the same
+# guard against github.event.head_commit.message. Without it every release
+# pushes two images and opens two bump MRs.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  assemble-changelog:
+    name: Assemble changelog
+    permissions:
+      contents: write
+    uses: tnoff/github-workflows/.github/workflows/assemble-changelog.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    secrets:
+      push_token: ${{ secrets.GIT_PUSH_TOKEN }}
+
+  tag:
+    name: Tag
+    needs: assemble-changelog
+    permissions:
+      contents: write
+    uses: tnoff/github-workflows/.github/workflows/tag.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    with:
+      gate_on_fragments: true
+    secrets:
+      push_token: ${{ secrets.GIT_PUSH_TOKEN }}
+
+  release:
+    name: Release
+    needs: tag
+    permissions:
+      contents: write
+    uses: tnoff/github-workflows/.github/workflows/release.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    with:
+      version: ${{ needs.tag.outputs.version }}
+      tag_created: ${{ needs.tag.outputs.tag_created }}
+
+  push-image:
+    name: Push image
+    if: "${{ !startsWith(github.event.head_commit.message, 'docs: assemble changelog') }}"
+    uses: tnoff/github-workflows/.github/workflows/docker-push.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    secrets:
+      oci_registry: ${{ secrets.OCI_REGISTRY }}
+      oci_namespace: ${{ secrets.OCI_NAMESPACE }}
+      oci_repo_name: ${{ secrets.OCI_REPO_NAME }}
+      oci_username: ${{ secrets.OCI_USERNAME }}
+      oci_token: ${{ secrets.OCI_TOKEN }}
+
+  trigger-bump:
+    name: Trigger docker-apps bump
+    needs: push-image
+    uses: tnoff/github-workflows/.github/workflows/trigger-bump.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    with:
+      bump_source: database-backup
+      image: ${{ needs.push-image.outputs.image }}
+      image_tag: ${{ needs.push-image.outputs.secondary_tag }}
+      target_project_id: ${{ vars.DOCKER_APPS_PROJECT_ID }}
+    secrets:
+      trigger_token: ${{ secrets.DOCKER_APPS_TRIGGER_TOKEN }}
