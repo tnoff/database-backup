@@ -1,3 +1,5 @@
+# Built for linux/arm64 to match the cluster. CI builds it natively on an
+# arm64 runner rather than cross-building under QEMU.
 FROM python:3.14-slim-bookworm
 ARG POSTGRES_VERSION=17
 ENV WORKDIR="/opt/backup"

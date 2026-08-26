@@ -1,0 +1,90 @@
+name: CI
+
+# Pull-request checks, ported from .gitlab-ci.yml.
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Scan for secrets
+    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+
+  # Reimplements the .image-build-rules `changes:` block: only rebuild when
+  # something that can alter the image changed. Doc-only, renovate.json and
+  # workflow-pin PRs skip the build, exactly as on GitLab.
+  #
+  # Done with git rather than a path-filter action to avoid another pinned
+  # dependency for ~10 lines of shell. A workflow-level `paths:` filter would
+  # be wrong here: it would gate the secret scan and bump-version too.
+  changes:
+    name: Detect image-input changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      image: ${{ steps.filter.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Filter
+        id: filter
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --quiet origin "${BASE_REF}"
+          MATCH=false
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            case "$f" in
+              Dockerfile|requirements.txt|files/*) MATCH=true; break ;;
+            esac
+          done <<< "$(git diff --name-only "origin/${BASE_REF}...HEAD")"
+          echo "image inputs changed: ${MATCH}"
+          echo "image=${MATCH}" >> "$GITHUB_OUTPUT"
+
+  # The GitLab config ran the image build and the image scan as two jobs, with
+  # the built image shipped between them as a tarball through an object-storage
+  # bucket. docker-build-check does both in one job, so the bucket, the upload
+  # and the download are gone.
+  #
+  # NOTE: this job is conditional, so it must never be added to
+  # required_status_checks -- a required check that skips blocks the merge.
+  build:
+    name: Build and scan image
+    needs: changes
+    if: needs.changes.outputs.image == 'true'
+    uses: tnoff/github-workflows/.github/workflows/docker-build-check.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+
+  bump-version:
+    name: Bump version
+    if: startsWith(github.head_ref, 'renovate/dev-')
+    permissions:
+      contents: write
+    uses: tnoff/github-workflows/.github/workflows/bump-version.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    with:
+      bump_changelog: true
+    secrets:
+      git_push_token: ${{ secrets.GIT_PUSH_TOKEN }}
+
+  auto-approve:
+    name: Auto-approve
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: tnoff/github-workflows/.github/workflows/renovate-auto-approve.yml@b2f9fe9ca011e5fdf04f82f3d14c8e499c7918e6
+    with:
+      branch_pattern: '^renovate/'
+    secrets:
+      approval_token: ${{ secrets.APPROVAL_TOKEN }}
