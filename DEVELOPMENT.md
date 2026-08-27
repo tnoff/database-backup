@@ -71,18 +71,22 @@ shellcheck files/backup.sh files/aws.sh
 
 ## CI / release
 
-CI is GitLab CI. `.gitlab-ci.yml` pulls templates from
-`tnoff-projects/github-workflows`:
+CI is GitHub Actions. `.github/workflows/` calls reusable workflows from
+`tnoff/github-workflows`, SHA-pinned in `uses:` and kept current by Renovate:
 
-| Template | Purpose |
-|---|---|
-| `buildkit-build-check.yml` | MR-time Dockerfile build check |
-| `buildkit-docker-push.yml` | Build + push to OCIR on default branch |
-| `trigger-bump.yml` | Open an MR in `docker-apps` to bump the SHA pin |
-| `trufflehog.yml`, `trufflehog-image.yml` | Secret scans (repo + image) |
-| `tag.yml`, `bump-version.yml` | Tag from `VERSION`, bump on default branch |
-| `renovate.yml` | Scheduled dependency updates |
-| `discord-notify.yml` | Pipeline-failure notifications |
+| Caller | Reusable workflow | Purpose |
+|---|---|---|
+| `ci.yml` | `trufflehog.yml` | Secret scan on PRs |
+| `ci.yml` | `docker-build-check.yml` | PR-time Dockerfile build check plus the image secret scan — one job, where GitLab needed two and a bucket to ship the tarball between them |
+| `ci.yml` | `bump-version.yml` | Bump `VERSION` and write a changelog fragment on `renovate/dev-*` PRs |
+| `ci.yml` | `renovate-auto-approve.yml` | Supply the code-owner approval Renovate cannot give itself |
+| `release.yml` | `assemble-changelog.yml` | Fold `changelog.d/*.md` into `CHANGELOG.md` on `main` |
+| `release.yml` | `tag.yml` | Tag from `VERSION` |
+| `release.yml` | `docker-push.yml` | Build + push to OCIR |
+| `release.yml` | `trigger-bump.yml` | Open an MR in `docker-apps` to bump the SHA pin |
+| `scheduled.yml` | `renovate.yml`, `branch-cleanup.yml` | Weekly dependency updates and stale-branch pruning |
+
+`.gitlab-ci.yml` is frozen in place for history and no longer runs.
 
 `VERSION` at the repo root drives release tagging. Bump it, push to
 `main`, CI handles the tag + push.
