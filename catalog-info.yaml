@@ -20,6 +20,6 @@ metadata:
   # Deployed, but as scheduled Jobs rather than a Deployment -- so there is no stable
   # set of pods for a kubernetes annotation to point at even once that plugin lands.
 spec:
-  type: tool
+  type: service
   owner: group:default/admin
   lifecycle: production
