@@ -16,10 +16,27 @@ metadata:
   description: >-
     Runs pg_dump and uploads the dump to S3-compatible object storage. Ships
     postgresql-client-17, overridable at build time. Not a service: docker-apps invokes
-    the image from CronJobs, one per database.
-  # Deployed, but as scheduled Jobs rather than a Deployment -- so there is no stable
-  # set of pods for a kubernetes annotation to point at even once that plugin lands.
+    the image from CronJobs, one per database -- discord-database-backup at 11:00 UTC and
+    backstage-database-backup at 12:00, each its own Component in that repo.
+  # `library` rather than `service`, changed once those two CronJob Components existed.
+  #
+  # The description above already said "Not a service" while spec.type said service, and
+  # the field was the half that was wrong. It was compensating: until docker-apps declared
+  # the CronJobs, nothing in the catalog represented the deployed thing, so this entity had
+  # to stand in for it. Now it does not, and this is what it actually is -- an artifact two
+  # workloads consume.
+  #
+  # `library` is not limited to pip-installable packages, whatever the taxonomy's original
+  # wording suggested. MMM-BartTimes is `library` and is a MagicMirror JS module baked into
+  # magic-mirror-docker's image; the working definition is "a thing other components consume
+  # rather than a thing that runs on its own", and an image invoked from a CronJob is that.
+  # This is also NOT a revival of the withdrawn `tool` type: that failed because "is this a
+  # tool or a service" has no stable answer, whereas "does something else deploy it, or does
+  # it deploy itself" does.
+  #
+  # No kubernetes annotation, and now for a better reason than before: the pods belong to the
+  # CronJob Components, which is where that annotation should eventually go.
 spec:
-  type: service
+  type: library
   owner: group:default/admin
   lifecycle: production
