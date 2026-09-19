@@ -90,7 +90,7 @@ jobs:
     name: Assemble changelog
     permissions:
       contents: write
-    uses: tnoff/github-workflows/.github/workflows/assemble-changelog.yml@0d92c3c09cf7dd78ce36cb5f40618e7fc296e6a2
+    uses: tnoff/github-workflows/.github/workflows/assemble-changelog.yml@8f112893cd17d68fe039d3ba2643d2881bfafdcb
     secrets:
       app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
       app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
@@ -100,7 +100,7 @@ jobs:
     needs: assemble-changelog
     permissions:
       contents: write
-    uses: tnoff/github-workflows/.github/workflows/tag.yml@0d92c3c09cf7dd78ce36cb5f40618e7fc296e6a2
+    uses: tnoff/github-workflows/.github/workflows/tag.yml@8f112893cd17d68fe039d3ba2643d2881bfafdcb
     with:
       gate_on_fragments: true
     secrets:
@@ -112,7 +112,7 @@ jobs:
     needs: tag
     permissions:
       contents: write
-    uses: tnoff/github-workflows/.github/workflows/release.yml@0d92c3c09cf7dd78ce36cb5f40618e7fc296e6a2
+    uses: tnoff/github-workflows/.github/workflows/release.yml@8f112893cd17d68fe039d3ba2643d2881bfafdcb
     with:
       version: ${{ needs.tag.outputs.version }}
       tag_created: ${{ needs.tag.outputs.tag_created }}
@@ -123,7 +123,7 @@ jobs:
     if: >-
       ${{ needs.changes.outputs.image == 'true'
           && !startsWith(github.event.head_commit.message, 'docs: assemble changelog') }}
-    uses: tnoff/github-workflows/.github/workflows/docker-push.yml@0d92c3c09cf7dd78ce36cb5f40618e7fc296e6a2
+    uses: tnoff/github-workflows/.github/workflows/docker-push.yml@8f112893cd17d68fe039d3ba2643d2881bfafdcb
     # registry / namespace / repo_name are INPUTS, not secrets. GitHub refuses
     # to set a job output containing secret material, so while they were
     # secrets the `image` output below came back empty and trigger-bump sent a
@@ -139,7 +139,7 @@ jobs:
   trigger-bump:
     name: Trigger docker-apps bump
     needs: push-image
-    uses: tnoff/github-workflows/.github/workflows/trigger-bump-dispatch.yml@0d92c3c09cf7dd78ce36cb5f40618e7fc296e6a2
+    uses: tnoff/github-workflows/.github/workflows/trigger-bump-dispatch.yml@8f112893cd17d68fe039d3ba2643d2881bfafdcb
     with:
       bump_source: database-backup
       image: ${{ needs.push-image.outputs.image }}
