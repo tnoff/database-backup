@@ -43,5 +43,5 @@ Pass in `GZIP_ARGS` for additional args on the gzip command.
 
 ## For developers
 
-- [DEVELOPMENT.md](DEVELOPMENT.md) — build, local run, CI templates.
-- [AGENTS.md](AGENTS.md) — non-obvious internals for AI coding agents.
+- [DEVELOPMENT.md](docs/DEVELOPMENT.md) — build, local run, CI templates.
+- [AGENTS.md](docs/AGENTS.md) — non-obvious internals for AI coding agents.

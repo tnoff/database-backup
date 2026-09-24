@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Guidance for AI coding agents working in this repository. For end-user
-docs (env vars, S3 setup, volumes) see [README.md](README.md); for
+docs (env vars, S3 setup, volumes) see [README.md](../README.md); for
 build, local run, and CI see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## What this image does
@@ -92,7 +92,7 @@ schedule never schedules sub-second.
 
 ## Conventions
 
-- New env vars need a row in [README.md](README.md#environment-variables).
+- New env vars need a row in [README.md](../README.md#environment-variables).
 - New optional CLI args follow the `<UPPER>_ARGS` pattern read as an
   array (see PGDUMP_ARGS).
 - The image stays one-shot — no in-container scheduling, no daemons.
