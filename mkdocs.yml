@@ -1,0 +1,11 @@
+site_name: 'database-backup'
+site_description: 'Runs pg_dump and uploads the dump to S3-compatible object storage, invoked as a one-shot Kubernetes CronJob'
+
+nav:
+  - Home: README.md
+  - Development: DEVELOPMENT.md
+  - Agents/Conventions: AGENTS.md
+  - Contributing: CONTRIBUTING.md
+
+plugins:
+  - techdocs-core

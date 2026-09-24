@@ -1,7 +1,7 @@
 # Development
 
 Build, local run, and CI for this image. User-facing env-var setup and
-volume mounts live in [README.md](README.md); for non-obvious script
+volume mounts live in [README.md](../README.md); for non-obvious script
 internals see [AGENTS.md](AGENTS.md).
 
 ## Prerequisites
@@ -79,11 +79,12 @@ CI is GitHub Actions. `.github/workflows/` calls reusable workflows from
 | `ci.yml` | `trufflehog.yml` | Secret scan on PRs |
 | `ci.yml` | `docker-build-check.yml` | PR-time Dockerfile build check plus the image secret scan — one job, where GitLab needed two and a bucket to ship the tarball between them |
 | `ci.yml` | `bump-version.yml` | Bump `VERSION` and write a changelog fragment on `renovate/dev-*` PRs |
-| `ci.yml` | `renovate-auto-approve.yml` | Supply the code-owner approval Renovate cannot give itself |
+| `ci.yml` | `check-workflow-contracts.yml` | Catch a `uses:` whose inputs/secrets no longer match the pinned callee |
 | `release.yml` | `assemble-changelog.yml` | Fold `changelog.d/*.md` into `CHANGELOG.md` on `main` |
 | `release.yml` | `tag.yml` | Tag from `VERSION` |
+| `release.yml` | `release.yml` | Create the GitHub release |
 | `release.yml` | `docker-push.yml` | Build + push to OCIR |
-| `release.yml` | `trigger-bump.yml` | Open an MR in `docker-apps` to bump the SHA pin |
+| `release.yml` | `trigger-bump-dispatch.yml` | Open an MR in `docker-apps` to bump the SHA pin |
 | `scheduled.yml` | `renovate.yml`, `branch-cleanup.yml` | Weekly dependency updates and stale-branch pruning |
 
 `.gitlab-ci.yml` is frozen in place for history and no longer runs.
@@ -97,4 +98,4 @@ The consumer manifest lives in
 [`tnoff-projects/docker-apps/postgres/`](https://gitlab.com/tnoff-projects/docker-apps/-/tree/main/postgres)
 as a Kubernetes CronJob. The schedule, secret mounts, and volume
 mounts are defined there. Bumping the image is automatic via
-`trigger-bump.yml`.
+`trigger-bump-dispatch.yml`.
