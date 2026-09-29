@@ -6,10 +6,18 @@ echo "Starting backup script"
 date -u
 
 if [ -f /opt/backup/env/cron-env ]; then
+  # Runtime-only, mounted at deploy time -- never present at lint time by
+  # design.
+  # shellcheck disable=SC1091
   source /opt/backup/env/cron-env
 fi
 
+# Intentional word-splitting: these are operator-set config (cron-env), not
+# untrusted input, and the whole point is turning a space-separated string
+# into argv entries.
+# shellcheck disable=SC2206
 PGDUMP_ARGS=(${PGDUMP_ARGS:-})
+# shellcheck disable=SC2206
 GZIP_ARGS=(${GZIP_ARGS:-})
 
 BACKUP_DIR="/opt/backup/files"

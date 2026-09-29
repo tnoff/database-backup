@@ -129,6 +129,36 @@ jobs:
       app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
       app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
 
+  # Inline rather than a shared reusable workflow: this is the only repo in
+  # the fleet with shell scripts worth linting right now (a single `docker
+  # run` invocation isn't worth a whole reusable-workflow file for one
+  # consumer), same reasoning terraform-modules' own ci.yml gives for its
+  # inline jobs.
+  shellcheck:
+    name: shellcheck
+    needs: metadata
+    if: needs.metadata.outputs.only != 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      # The image is scratch-based (no shell), so glob expansion can't happen
+      # inside the container -- and it can't happen on the runner against a
+      # container-only path like /mnt/files/*.sh either, since that path
+      # doesn't exist on the runner's own filesystem (an unmatched glob
+      # passes through as a literal string by default, which is what shipped
+      # here first and broke: shellcheck received the literal, unexpanded
+      # "/mnt/files/*.sh" as a filename). Fix: glob the real, relative,
+      # runner-side path (files/*.sh, which does exist -- it's the checkout),
+      # then -w /mnt makes that same relative path resolve inside the
+      # container too.
+      - name: Run shellcheck
+        run: |
+          docker run --rm -v "${PWD}:/mnt" -w /mnt koalaman/shellcheck:v0.11.0 files/*.sh
+
   # Catches a `uses:` whose inputs or secrets no longer match the pinned callee.
   # That mismatch fails the calling workflow at STARTUP -- no job is created, no
   # check reports, and no `workflow_run` event fires -- so neither this checks
@@ -156,18 +186,19 @@ jobs:
     # This job always runs and its name never changes, so the ruleset requires
     # exactly one context and the jobs underneath stay free to change.
     if: always()
-    needs: [secrets, changes, build, contracts, metadata]
+    needs: [secrets, changes, build, contracts, metadata, shellcheck]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
       - name: Summarise
         run: |
-          echo "secrets:   ${{ needs.secrets.result }}"
-          echo "metadata:  ${{ needs.metadata.result }}"
-          echo "changes:   ${{ needs.changes.result }}"
-          echo "build:     ${{ needs.build.result }}"
-          echo "contracts: ${{ needs.contracts.result }}"
+          echo "secrets:    ${{ needs.secrets.result }}"
+          echo "metadata:   ${{ needs.metadata.result }}"
+          echo "changes:    ${{ needs.changes.result }}"
+          echo "build:      ${{ needs.build.result }}"
+          echo "contracts:  ${{ needs.contracts.result }}"
+          echo "shellcheck: ${{ needs.shellcheck.result }}"
 
       - name: Fail if any job failed
         # `skipped` is deliberately allowed: with allow_fork_prs false a fork
@@ -177,7 +208,8 @@ jobs:
           needs.changes.result == 'failure' || needs.changes.result == 'cancelled' ||
           needs.build.result == 'failure' || needs.build.result == 'cancelled' ||
           needs.contracts.result == 'failure' || needs.contracts.result == 'cancelled' ||
-          needs.metadata.result == 'failure' || needs.metadata.result == 'cancelled'
+          needs.metadata.result == 'failure' || needs.metadata.result == 'cancelled' ||
+          needs.shellcheck.result == 'failure' || needs.shellcheck.result == 'cancelled'
         run: |
           echo "::error::One or more CI jobs did not pass."
           exit 1
