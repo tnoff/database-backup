@@ -145,9 +145,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
+      # The image is scratch-based (no shell), so glob expansion can't happen
+      # inside the container -- and it can't happen on the runner against a
+      # container-only path like /mnt/files/*.sh either, since that path
+      # doesn't exist on the runner's own filesystem (an unmatched glob
+      # passes through as a literal string by default, which is what shipped
+      # here first and broke: shellcheck received the literal, unexpanded
+      # "/mnt/files/*.sh" as a filename). Fix: glob the real, relative,
+      # runner-side path (files/*.sh, which does exist -- it's the checkout),
+      # then -w /mnt makes that same relative path resolve inside the
+      # container too.
       - name: Run shellcheck
         run: |
-          docker run --rm -v "${PWD}:/mnt" koalaman/shellcheck:v0.11.0 /mnt/files/*.sh
+          docker run --rm -v "${PWD}:/mnt" -w /mnt koalaman/shellcheck:v0.11.0 files/*.sh
 
   # Catches a `uses:` whose inputs or secrets no longer match the pinned callee.
   # That mismatch fails the calling workflow at STARTUP -- no job is created, no
