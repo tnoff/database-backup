@@ -1,22 +1,22 @@
 # AGENTS.md
 
 Guidance for AI coding agents working in this repository. For end-user
-docs (env vars, S3 setup, volumes) see [README.md](../README.md); for
+docs (env vars, S3 setup, volumes) see [README.md](README.md); for
 build, local run, and CI see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## What this image does
 
 One-shot `pg_dump | gzip | aws s3api put-object` runner. The container
-is not meant to be long-running — the Kubernetes deployment in
-[`docker-apps/postgres/`](https://gitlab.com/tnoff-projects/docker-apps/-/tree/main/postgres)
-schedules it as a CronJob that runs to completion. No in-container
+is not meant to be long-running — the CronJobs in `tnoff/docker-apps`
+(`apps/discord/backup-cronjob.yaml`, `apps/backstage/backup-cronjob.yaml`)
+run it to completion. No in-container
 cron daemon despite the file name (`cron-env`).
 
 Shape:
 
 ```
 .
-├── Dockerfile          # python:3.14-slim + postgres client + awscli
+├── Dockerfile          # python:3.14-slim-bookworm + postgres client + awscli
 ├── files/
 │   ├── backup.sh       # entrypoint — invoked by `CMD` in the Dockerfile
 │   └── aws.sh          # thin wrapper around `aws s3api put-object`
@@ -35,15 +35,11 @@ so credentials never live in the image layer. If the file isn't
 mounted, `pg_dump` still runs but will fail without `PGPASSWORD` /
 `DATABASE_*` set in the container's env.
 
-### `aws.sh` uses `--no-verify-ssl`
+### `aws.sh` takes the object key from the local path
 
-`aws s3api put-object --no-verify-ssl` is required when talking to OCI
-Object Storage via the S3-compatible endpoint with an OCI-issued
-certificate that the awscli's CA bundle doesn't trust. It's not a
-general-purpose "skip SSL" — it's the specific workaround for that
-endpoint. Don't propagate this flag to other AWS-CLI calls and don't
-remove it without confirming the bucket endpoint's cert chain is
-recognised.
+`aws.sh` runs `aws s3api put-object --key "$BACKUP_FILE"` with the full local
+path, so objects land at `/opt/backup/files/<timestamp>.sql.gz` in the bucket.
+There is no `--no-verify-ssl`; TLS is verified normally. Don't reintroduce it.
 
 ### `PGDUMP_ARGS` and `GZIP_ARGS` are arrays, not strings
 
@@ -67,17 +63,16 @@ record.
 
 ### Postgres major is a build arg
 
-`ARG POSTGRES_VERSION=17` in the Dockerfile sets the default. The
-README previously claimed "postgres 16" — the actual default is now
-17. To bump the bundled client, edit the ARG default; CI rebuilds and
-the consumer in `docker-apps` picks up the new SHA pin automatically.
+`ARG POSTGRES_VERSION=17` in the Dockerfile sets the default. To bump the
+bundled client, edit the ARG default; CI rebuilds and docker-apps picks up the
+new pin through the `image-bump` dispatch.
 
 ### `set -ux` (no `e`)
 
 `backup.sh` runs under `set -ux` but **not** `-e`. That's deliberate:
 if `pg_dump` fails, the script still attempts the (now empty) upload
-so the failure surfaces in CloudWatch / OCI logging as an empty file
-rather than a silent missing job. Don't add `-e` — it would short-
+so the failure surfaces as an empty file in the bucket rather than a
+silent missing job. Don't add `-e` — it would short-
 circuit error reporting.
 
 ### Backup file naming
@@ -92,7 +87,7 @@ schedule never schedules sub-second.
 
 ## Conventions
 
-- New env vars need a row in [README.md](../README.md#environment-variables).
+- New env vars need a row in [README.md](README.md#environment-variables).
 - New optional CLI args follow the `<UPPER>_ARGS` pattern read as an
   array (see PGDUMP_ARGS).
 - The image stays one-shot — no in-container scheduling, no daemons.
