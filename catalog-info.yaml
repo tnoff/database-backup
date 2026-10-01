@@ -42,3 +42,5 @@ spec:
   lifecycle: production
   dependsOn:
     - component:default/github-workflows
+  consumesApis:
+    - api:default/image-bump
