@@ -1,6 +1,8 @@
 # Database Backup
 
-Runs a simple `pg_dump` command and uploads to S3 Object Storage
+Runs a one-shot `pg_dump | gzip` and uploads the result to S3-compatible
+object storage (OCI Object Storage in this fleet). Not a service: the container
+runs once and exits.
 
 ## PG Version
 
@@ -10,13 +12,17 @@ major (e.g. when targeting an older database server).
 
 ## Volumes
 
-All backup file data written to `/opt/backup/files` if you want to keep it on a data volume for consistency.
+Dumps are written to `/opt/backup/files` and deleted at the end of every run
+(whether or not the upload succeeded), so S3 is the only record. The upload key
+is the local path, `/opt/backup/files/<UTC timestamp>.sql.gz`.
 
-Mount a `cron-env` file to the `/opt/backup/env` directory for all environment vars.
+Optionally mount a `cron-env` file at `/opt/backup/env/cron-env`; it is sourced
+if present. Plain container environment variables work equally well.
 
 ## Environment Variables
 
-For environment variables to be used in the cron job, place environment exports in a `/opt/backup/env/cron-env` file.
+Set these in the container environment, or as `export` lines in
+`/opt/backup/env/cron-env`.
 
 Requires:
 
@@ -29,19 +35,33 @@ Requires:
 
 ## S3 Setup
 
-Place the relevant environment exports in the `/opt/backup/env/cron-env` file, including:
+Standard AWS CLI variables:
 
 - `AWS_ENDPOINT_URL_S3`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 
+Against OCI's S3-compatible endpoint the fleet also sets
+`AWS_REQUEST_CHECKSUM_CALCULATION=WHEN_REQUIRED` and
+`AWS_RESPONSE_CHECKSUM_VALIDATION=WHEN_REQUIRED`, and `PGSSLMODE=require` for
+the database connection (see the CronJobs below).
+
 ## Optional Args
 
-Pass in `PGDUMP_ARGS` to allow additional args on the pgdump command.
+`PGDUMP_ARGS` adds args to the `pg_dump` command; `GZIP_ARGS` adds args to
+`gzip`. Both are split on whitespace.
 
-Pass in `GZIP_ARGS` for additional args on the gzip command.
+## Consumers
+
+The image is `iad.ocir.io/tnoff/database_backup`. In `tnoff/docker-apps` two
+CronJobs run it, each its own catalog Component: `discord-database-backup`
+(`apps/discord/backup-cronjob.yaml`, 11:00 UTC) and `backstage-database-backup`
+(`apps/backstage/backup-cronjob.yaml`, 12:00 UTC). Each is configured entirely
+through env and its own bucket credentials Secret; image pins are bumped
+automatically via the `image-bump` dispatch on release. See
+`techdocs/docker-apps` there (database backups) for the cross-repo picture.
 
 ## For developers
 
-- [DEVELOPMENT.md](docs/DEVELOPMENT.md) — build, local run, CI templates.
-- [AGENTS.md](docs/AGENTS.md) — non-obvious internals for AI coding agents.
+- [DEVELOPMENT.md](https://github.com/tnoff/database-backup/blob/main/docs/DEVELOPMENT.md) — build, local run, CI.
+- [AGENTS.md](https://github.com/tnoff/database-backup/blob/main/docs/AGENTS.md) — non-obvious internals for AI coding agents.
