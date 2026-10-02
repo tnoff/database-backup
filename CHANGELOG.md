@@ -5,6 +5,12 @@ All notable changes to database-backup will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2026-10-02
+
+### Changed
+
+- Added DATABASE_TYPE=sqlite: backs up a SQLite file with the online-backup API, verifies the copy, and fails without uploading on any error
+
 ## [0.0.32] - 2026-08-08
 
 ### Changed
