@@ -92,6 +92,6 @@ CI is GitHub Actions. `.github/workflows/` calls reusable workflows from
 
 ## Where it runs
 
-Two CronJobs in `tnoff/docker-apps` (`apps/discord/backup-cronjob.yaml`,
-`apps/backstage/backup-cronjob.yaml`) own the schedule, secrets and env.
+One CronJob in `tnoff/docker-apps` (`apps/discord/db-sqlite-backup-cronjob.yaml`) owns the
+schedule, secrets and env.
 Bumping the image is automatic via `trigger-bump-dispatch.yml`.

@@ -8,9 +8,8 @@ build, local run, and CI see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 One-shot `pg_dump | gzip | aws s3api put-object` runner (or, with
 `DATABASE_TYPE=sqlite`, `sqlite_backup.py | gzip | aws s3api put-object`). The container
-is not meant to be long-running — the CronJobs in `tnoff/docker-apps`
-(`apps/discord/backup-cronjob.yaml`, `apps/backstage/backup-cronjob.yaml`)
-run it to completion. No in-container
+is not meant to be long-running — the CronJob in `tnoff/docker-apps`
+(`apps/discord/db-sqlite-backup-cronjob.yaml`) runs it to completion. No in-container
 cron daemon despite the file name (`cron-env`).
 
 Shape:

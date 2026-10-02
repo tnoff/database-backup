@@ -12,13 +12,13 @@ kind: Component
 metadata:
   name: database-backup
   description: >-
-    Runs pg_dump and uploads the dump to S3-compatible object storage. Ships
-    postgresql-client-17, overridable at build time. Not a service: docker-apps invokes
-    the image from CronJobs, one per database -- discord-database-backup at 11:00 UTC and
-    backstage-database-backup at 12:00, each its own Component in that repo.
+    Backs up a database and uploads it to S3-compatible object storage: an online SQLite
+    copy (DATABASE_TYPE=sqlite) or, by default, pg_dump (it ships postgresql-client-17,
+    overridable at build time). Not a service: docker-apps invokes the image from a CronJob,
+    discord-db-sqlite-backup at 11:30 UTC, a Component declared in discord-bot's catalog.
   annotations:
     backstage.io/techdocs-ref: dir:.
-  # `library` rather than `service`, changed once those two CronJob Components existed.
+  # `library` rather than `service`, changed once the CronJob Components existed.
   #
   # The description above already said "Not a service" while spec.type said service, and
   # the field was the half that was wrong. It was compensating: until docker-apps declared

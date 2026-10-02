@@ -83,13 +83,15 @@ the database connection (see the CronJobs below).
 
 ## Consumers
 
-The image is `iad.ocir.io/tnoff/database_backup`. In `tnoff/docker-apps` two
-CronJobs run it, each its own catalog Component: `discord-database-backup`
-(`apps/discord/backup-cronjob.yaml`, 11:00 UTC) and `backstage-database-backup`
-(`apps/backstage/backup-cronjob.yaml`, 12:00 UTC). Each is configured entirely
-through env and its own bucket credentials Secret; image pins are bumped
-automatically via the `image-bump` dispatch on release. See
-`techdocs/docker-apps` there (database backups) for the cross-repo picture.
+The image is `iad.ocir.io/tnoff/database_backup`. In `tnoff/docker-apps` one
+CronJob runs it, `discord-db-sqlite-backup` (`apps/discord/db-sqlite-backup-cronjob.yaml`,
+11:30 UTC, `DATABASE_TYPE=sqlite`), declared as a catalog Component in `tnoff/discord-bot`. It is
+configured entirely through env and its own bucket credentials Secret; image pins are bumped
+automatically via the `image-bump` dispatch on release. See `techdocs/docker-apps` there
+(database backups) for the cross-repo picture. The `pg_dump` mode remains and is the default, but
+nothing currently uses it: the earlier Postgres consumers (`discord-database-backup` for the
+discord database, `backstage-database-backup` for the backstage catalog) were retired when both
+databases moved to SQLite.
 
 ## For developers
 
