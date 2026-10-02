@@ -39,9 +39,17 @@ Requires:
 
 Set `DATABASE_TYPE=sqlite` and `SQLITE_PATH=<path to the live database file>`;
 the `DATABASE_HOST`, `DATABASE_USER`, `DATABASE_NAME` and `PGPASSWORD` variables
-are not used. The container must be able to read that file, which for a
-single-writer database on a ReadWriteOnce volume means running it as a second
-container **in the same pod** as the database, not as a separate CronJob.
+are not used. The container must be able to read that file. On a
+ReadWriteOnce volume that is a per-**node** limit, not per-pod, so a Job can
+mount the live database's volume if it is scheduled onto the same node: use a
+required `podAffinity` on the database pod's labels with
+`topologyKey: kubernetes.io/hostname`, run it as the database's uid/gid, and
+give it an `emptyDir` at `/opt/backup/files` (the image's working directory is
+root-owned, so a non-root user cannot create it). A CronJob is preferred to a
+sidecar in the database pod: a failing sidecar marks the whole pod NotReady and
+takes the database out of its Service, where a failed Job only fails. See
+`apps/discord/db-sqlite-backup-cronjob.yaml` in `tnoff/docker-apps` for the
+working example.
 
 The copy is taken with SQLite's online-backup API, so it is consistent while the
 database is being written (WAL included), and it is written as one
@@ -54,6 +62,8 @@ upload) exits non-zero and uploads nothing, so a wrapping loop or Job sees it.
 
 To restore, stop the database process, `gunzip` the object to the database path,
 delete any stale `-wal` and `-shm` files beside it, and start the process.
+
+## S3 Setup
 
 Standard AWS CLI variables:
 
