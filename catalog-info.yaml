@@ -15,7 +15,8 @@ metadata:
     Backs up a database and uploads it to S3-compatible object storage: an online SQLite
     copy (DATABASE_TYPE=sqlite) or, by default, pg_dump (it ships postgresql-client-17,
     overridable at build time). Not a service: docker-apps invokes the image from a CronJob,
-    discord-db-sqlite-backup at 11:30 UTC, a Component declared in discord-bot's catalog.
+    discord-db-sqlite-backup at 11:30 UTC, whose catalog Component is discord-database-backup,
+    declared in docker-apps.
   annotations:
     backstage.io/techdocs-ref: dir:.
   # `library` rather than `service`, changed once the CronJob Components existed.
