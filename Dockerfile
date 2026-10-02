@@ -21,6 +21,7 @@ RUN rm /opt/requirements.txt
 # Setup cronfiles
 COPY ./files/backup.sh "${WORKDIR}/backup.sh"
 COPY ./files/aws.sh "${WORKDIR}/aws.sh"
-RUN chmod +x "${WORKDIR}/backup.sh" "${WORKDIR}/aws.sh"
+COPY ./files/sqlite_backup.py "${WORKDIR}/sqlite_backup.py"
+RUN chmod +x "${WORKDIR}/backup.sh" "${WORKDIR}/aws.sh" "${WORKDIR}/sqlite_backup.py"
 
 CMD ["/opt/backup/backup.sh", ">>", "/var/log/backup.log",  "2>&1"]

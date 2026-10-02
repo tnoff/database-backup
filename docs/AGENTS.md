@@ -6,7 +6,8 @@ build, local run, and CI see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## What this image does
 
-One-shot `pg_dump | gzip | aws s3api put-object` runner. The container
+One-shot `pg_dump | gzip | aws s3api put-object` runner (or, with
+`DATABASE_TYPE=sqlite`, `sqlite_backup.py | gzip | aws s3api put-object`). The container
 is not meant to be long-running — the CronJobs in `tnoff/docker-apps`
 (`apps/discord/backup-cronjob.yaml`, `apps/backstage/backup-cronjob.yaml`)
 run it to completion. No in-container
@@ -19,6 +20,7 @@ Shape:
 ├── Dockerfile          # python:3.14-slim-bookworm + postgres client + awscli
 ├── files/
 │   ├── backup.sh       # entrypoint — invoked by `CMD` in the Dockerfile
+│   ├── sqlite_backup.py # online copy + verification for DATABASE_TYPE=sqlite
 │   └── aws.sh          # thin wrapper around `aws s3api put-object`
 ├── requirements.txt    # awscli pin (only Python dep)
 └── VERSION             # source of truth for release tagging
@@ -74,6 +76,12 @@ if `pg_dump` fails, the script still attempts the (now empty) upload
 so the failure surfaces as an empty file in the bucket rather than a
 silent missing job. Don't add `-e` — it would short-
 circuit error reporting.
+
+The sqlite path is the exception and is deliberately stricter: it checks each
+step and exits non-zero without uploading on any failure. Do not copy the
+postgres "upload whatever we have" behaviour into it, and do not loosen it: a
+backup of a database nobody can regenerate must never be a silently empty
+object.
 
 ### Backup file naming
 
