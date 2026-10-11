@@ -83,7 +83,7 @@ CI is GitHub Actions. `.github/workflows/` calls reusable workflows from
 | `release.yml` | `assemble-changelog.yml` | Fold `changelog.d/*.md` into `CHANGELOG.md` on `main` |
 | `release.yml` | `tag.yml` | Tag from `VERSION` |
 | `release.yml` | `release.yml` | Create the GitHub release |
-| `release.yml` | `docker-push.yml` | Build + push to OCIR |
+| `release.yml` | `docker-push-oidc.yml` | Build + push to OCIR, logging in with the job's GitHub OIDC identity (no stored OCIR credential) |
 | `release.yml` | `trigger-bump-dispatch.yml` | Dispatch `image-bump` to `docker-apps`, which opens the pin-bump PR |
 | `scheduled.yml` | `renovate.yml`, `branch-cleanup.yml` | Weekly dependency updates and stale-branch pruning |
 
