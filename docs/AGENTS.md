@@ -16,7 +16,7 @@ Shape:
 
 ```
 .
-├── Dockerfile          # python:3.14-slim-bookworm + postgres client + awscli
+├── Dockerfile          # python:3.15-slim-bookworm + postgres client + awscli
 ├── files/
 │   ├── backup.sh       # entrypoint — invoked by `CMD` in the Dockerfile
 │   ├── sqlite_backup.py # online copy + verification for DATABASE_TYPE=sqlite
