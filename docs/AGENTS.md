@@ -36,10 +36,13 @@ so credentials never live in the image layer. If the file isn't
 mounted, `pg_dump` still runs but will fail without `PGPASSWORD` /
 `DATABASE_*` set in the container's env.
 
-### `aws.sh` takes the object key from the local path
+### `aws.sh` uses the file name as the object key
 
-`aws.sh` runs `aws s3api put-object --key "$BACKUP_FILE"` with the full local
-path, so objects land at `/opt/backup/files/<timestamp>.sql.gz` in the bucket.
+`aws.sh` runs `aws s3api put-object --key "$(basename "$BACKUP_FILE")"`, so objects
+land at `<timestamp>.sql.gz` in the bucket. Until 0.1.3 the key was the full local path
+(`/opt/backup/files/<timestamp>.sql.gz`, with a leading slash); that is accepted by
+Oracle's S3 API but rejected by S3-compatible gateways in front of it, so don't go back
+to a path key.
 There is no `--no-verify-ssl`; TLS is verified normally. Don't reintroduce it.
 
 ### `PGDUMP_ARGS` and `GZIP_ARGS` are arrays, not strings
