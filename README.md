@@ -15,8 +15,10 @@ major (e.g. when targeting an older database server).
 
 Dumps are written to `/opt/backup/files` and deleted at the end of every run
 (whether or not the upload succeeded), so S3 is the only record. The upload key
-is the local path, `/opt/backup/files/<UTC timestamp>.sql.gz` (postgres) or
-`/opt/backup/files/<UTC timestamp>.sqlite.gz` (sqlite).
+is the file name, `<UTC timestamp>.sql.gz` (postgres) or `<UTC timestamp>.sqlite.gz`
+(sqlite). Before version 0.1.3 it was the full local path with a leading slash
+(`/opt/backup/files/<UTC timestamp>...`); objects written then keep that key until they
+expire.
 
 Optionally mount a `cron-env` file at `/opt/backup/env/cron-env`; it is sourced
 if present. Plain container environment variables work equally well.
