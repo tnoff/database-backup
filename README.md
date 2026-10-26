@@ -67,16 +67,23 @@ delete any stale `-wal` and `-shm` files beside it, and start the process.
 
 ## S3 Setup
 
-Standard AWS CLI variables:
+The upload uses the standard AWS CLI variables:
 
 - `AWS_ENDPOINT_URL_S3`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 
+In this fleet the CronJobs do not hold a stored key (tnoff/terraform#217). Two sidecars
+run beside the backup: `rpst` exchanges the pod's ServiceAccount token for a short-lived OCI
+resource principal token, and `s3-gateway` (rclone serve s3) listens on `127.0.0.1` only and signs
+requests with it. The three variables above point the image at that gateway, with a throwaway key
+that is not a secret because nothing outside the pod can reach it. Any S3-compatible endpoint with a
+real key works the same way.
+
 Against OCI's S3-compatible endpoint the fleet also sets
 `AWS_REQUEST_CHECKSUM_CALCULATION=WHEN_REQUIRED` and
-`AWS_RESPONSE_CHECKSUM_VALIDATION=WHEN_REQUIRED`, and `PGSSLMODE=require` for
-the database connection (see the CronJobs below).
+`AWS_RESPONSE_CHECKSUM_VALIDATION=WHEN_REQUIRED`. `PGSSLMODE=require` is set for
+the database connection in the `pg_dump` mode.
 
 ## Optional Args
 
@@ -85,12 +92,17 @@ the database connection (see the CronJobs below).
 
 ## Consumers
 
-The image is `iad.ocir.io/tnoff/database_backup`. In `tnoff/docker-apps` one
-CronJob runs it, `discord-db-sqlite-backup` (`apps/discord/db-sqlite-backup-cronjob.yaml`,
-11:30 UTC, `DATABASE_TYPE=sqlite`). Its catalog Component is `discord-database-backup`, declared in
-`tnoff/docker-apps` next to the manifest (the name predates the move off Postgres and was kept so
-existing `dependsOn` edges resolve). It is configured entirely through env and its own bucket
-credentials Secret; image pins are bumped automatically via the `image-bump` dispatch on release. See
+The image is `iad.ocir.io/tnoff/database_backup`. In `tnoff/docker-apps` two
+CronJobs run it, both with `DATABASE_TYPE=sqlite`:
+
+- `discord-db-sqlite-backup` (`apps/discord/db-sqlite-backup-cronjob.yaml`, 11:30 UTC). Its catalog
+  Component is `discord-database-backup`, declared in `tnoff/docker-apps` next to the manifest (the
+  name predates the move off Postgres and was kept so existing `dependsOn` edges resolve).
+- `hathor-db-sqlite-backup` (`apps/hathor/db-sqlite-backup-cronjob.yaml`, 04:40 UTC), catalog Component
+  `hathor-database-backup`.
+
+Each is configured entirely through env and writes to its own bucket through the `rpst` and
+`s3-gateway` sidecars (see S3 Setup). Image pins are bumped automatically via the `image-bump` dispatch on release. See
 `techdocs/docker-apps` there (database backups) for the cross-repo picture. The `pg_dump` mode
 remains and is the default, but nothing currently uses it: the earlier Postgres consumers (the
 Postgres CronJob for the discord database, and `backstage-database-backup` for the backstage
